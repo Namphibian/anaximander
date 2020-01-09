@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import com.namphibian.anaximander.model.ChartEntry;
+
 
 public class NodePodMap {
     public String name;
@@ -35,21 +35,31 @@ public class NodePodMap {
         chartEntry.name = name;
 
         this.mapPods.forEach((key, value) -> {
-            ChartEntry childNamespace = new ChartEntry();
-            childNamespace.name = key;
-            value.forEach(valuePod->{
-                ChartEntry childPod = new ChartEntry();
+            if(!(key.equalsIgnoreCase("kube-system"))){//|| (key.equalsIgnoreCase("kubernetes-dashboard")))) {
+                ChartEntry childNamespace = new ChartEntry();
+                childNamespace.name = key;
+                value.forEach(valuePod -> {
+                    ChartEntry childPod = new ChartEntry();
+                    if(valuePod.substring(valuePod.length()-17, valuePod.length()-16).equalsIgnoreCase("-")){
+                        childPod.name= valuePod.substring(0, valuePod.length()-16);
+                    }
 
-                childPod.name = valuePod;
-     
 
-                childPod.size = 1;
-                childNamespace.addChildEntry(childPod);
-            });
-            chartEntry.addChildEntry(childNamespace);
+                    //childPod.name=valuePod.substring(valuePod.length()-17, valuePod.length()-16);
+                    childPod.name= valuePod.substring(0,nthLastIndexOf(2, "-", valuePod));
+
+                    childPod.size = 1;
+                    childNamespace.addChildEntry(childPod);
+                });
+                chartEntry.addChildEntry(childNamespace);
+            }
         });
 
 
+    }
+    static int nthLastIndexOf(int nth, String ch, String string) {
+        if (nth <= 0) return string.length();
+        return nthLastIndexOf(--nth, ch, string.substring(0, string.lastIndexOf(ch)));
     }
     private List<String> listNamespacesOnNode(){
 
